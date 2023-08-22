@@ -76,7 +76,7 @@ public class StockTree implements StockIF {
                     found = true;
                     //Modificamos el valor del nodo INFO
                     int unidades = nodeInfo.getUnidades();
-                    nodeInfo.setUnidades(unidades + u);
+                    nodeInfo.setUnidades(u);
                 }
             }
         }
@@ -105,6 +105,9 @@ public class StockTree implements StockIF {
                     found = true;
                     rootTree = child;
                 }
+            }
+            if (!found) {
+                return -1;
             }
         }
         IteratorIF<GTreeIF<Node>> it = rootTree.getChildren().iterator();
@@ -141,42 +144,20 @@ public class StockTree implements StockIF {
                     rootTree = child;
                 }
             }
+            if (!found) {
+                return new List<>();
+            }
+        }
+        if (rootTree.getNumChildren() != 0) {
+            return preorderIterative(rootTree, prefix);
+        } else {
+            return new List<>();
         }
 
-        //QueueIF<E> queue = new Queue<E>();
-
-        //if (!t.isEmpty()) {
-        //    q.enqueue(t.getRoot());
-        //    IteratorIF<GTreeIF<E>> childIt = t.getChildren().iterator();
-        //    while (childIt.hasNext()) {
-        //        preorder(childIt.getNext(), q);
-        //    }
-        //}
-
-            IteratorIF<Node> prefixIT = rootTree.iterator(GTreeIF.IteratorModes.PREORDER);
-            List <StockPair> sequence = new List<>();
-            String productName = prefix;
-            while (prefixIT.hasNext()){
-
-                Stack<StockPair> pairStack = new Stack<>();
-
-                Node node = prefixIT.getNext();
-
-                if(node instanceof NodeInfo nodeInfo){
-                    int unidades = nodeInfo.getUnidades();
-                    StockPair stockPair = new StockPair(productName, unidades);
-                    sequence.insert(sequence.size()+1, stockPair);
-                }
-                else if(node instanceof NodeInner nodeInner){
-                    productName = productName + nodeInner.getLetter();
-                }
-            }
-    return null;
     }
-    public static List<StockPair> preorderIterative(GTree<Node> root) {
+    public static List<StockPair> preorderIterative(GTreeIF<Node> root, String prefix) {
 
-        String preString = "";
-
+        StringBuilder preString = new StringBuilder();
         List<StockPair> sequence = new List<>();
         Queue<StockPair> queuePAIR = new Queue<>();
 
@@ -189,27 +170,24 @@ public class StockTree implements StockIF {
         }
 
         stackPREORDER.push(root);
-        queuePAIR.enqueue(new StockPair(preString, 0));
+        queuePAIR.enqueue(new StockPair(prefix, 0));
 
         while (!stackPREORDER.isEmpty()){
 
             //Continue Preorder
             GTreeIF<Node> node = stackPREORDER.getTop();
+            stackPREORDER.pop();
 
             Node nodeRoot = node.getRoot();
             if (nodeRoot instanceof NodeInner nodeInner){
-                preString = preString + nodeInner.getLetter();
+                preString.append(nodeInner.getLetter());
             }
             else if(nodeRoot instanceof NodeInfo nodeInfo){
                 StockPair sp = queuePAIR.getFirst();
                 String producto = sp.getProducto() + preString;
 
                 sequence.insert(sequence.size()+1, new StockPair(producto, nodeInfo.getUnidades()));
-
-                int unidades = nodeInfo.getUnidades();
-                StockPair stockPair = new StockPair(preString, unidades);
-                queuePAIR.enqueue(stockPair);
-
+                preString = new StringBuilder();
             }
 
             //Add children to stack PREORDER
@@ -221,11 +199,11 @@ public class StockTree implements StockIF {
             //Only add to queue divergent branches (more than one child)
             while (childrenIT.hasNext()){
                 stackPREORDER.push(childrenIT.getNext());
-                StockPair stockPair = new StockPair(preString, 0);
+                StockPair stockPair = new StockPair(prefix + preString, 0);
                 queuePAIR.enqueue(stockPair);
             }
         }
-        return null;
+        return sequence;
     }
 
 
