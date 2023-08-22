@@ -7,7 +7,7 @@ import es.uned.lsi.eped.DataStructures.*;
 
 public class StockTree implements StockIF {
 
-    protected static GTreeIF<Node> stock; /* El stock es un árbol general de nodos */
+    public GTreeIF<Node> stock; /* El stock es un árbol general de nodos */
 
     /* Constructor de la clase */
     public StockTree() {
@@ -85,15 +85,148 @@ public class StockTree implements StockIF {
 
     @Override
     public int retrieveStock(String p) {
-        return 0;
+        int n = p.length();
+        //Determina el target tree como el stock
+        GTreeIF<Node> rootTree = stock;
+
+        // Itera sobre el string p
+        for (int i = 0; i < n; i++) {
+
+            char c = p.charAt(i);
+            boolean found = false;
+
+            IteratorIF<GTreeIF<Node>> it = rootTree.getChildren().iterator();
+            while (it.hasNext() && !found) {
+                GTreeIF<Node> child = it.getNext();
+                //Si el hijo es un nodo interno y su letra coincide con el char c
+                //  found = true
+                //  target tree pasa a ser el hijo
+                if (child.getRoot() instanceof NodeInner inner && inner.getLetter() == c) {
+                    found = true;
+                    rootTree = child;
+                }
+            }
+        }
+        IteratorIF<GTreeIF<Node>> it = rootTree.getChildren().iterator();
+        while (it.hasNext()) {
+            GTreeIF<Node> child = it.getNext();
+            if (child.getRoot() instanceof NodeInfo nodeInfo) {
+                //Modificamos el valor del nodo INFO
+                return nodeInfo.getUnidades();
+            }
+        }
+        return -1;
     }
 
     @Override
     public SequenceIF<StockPair> listStock(String prefix) {
+        int n = prefix.length();
+        //Determina el target tree como el stock
+        GTreeIF<Node> rootTree = stock;
+
+        // Itera sobre el string p
+        for (int i = 0; i < n; i++) {
+
+            char c = prefix.charAt(i);
+            boolean found = false;
+
+            IteratorIF<GTreeIF<Node>> it = rootTree.getChildren().iterator();
+            while (it.hasNext() && !found) {
+                GTreeIF<Node> child = it.getNext();
+                //Si el hijo es un nodo interno y su letra coincide con el char c
+                //  found = true
+                //  target tree pasa a ser el hijo
+                if (child.getRoot() instanceof NodeInner inner && inner.getLetter() == c) {
+                    found = true;
+                    rootTree = child;
+                }
+            }
+        }
+
+        //QueueIF<E> queue = new Queue<E>();
+
+        //if (!t.isEmpty()) {
+        //    q.enqueue(t.getRoot());
+        //    IteratorIF<GTreeIF<E>> childIt = t.getChildren().iterator();
+        //    while (childIt.hasNext()) {
+        //        preorder(childIt.getNext(), q);
+        //    }
+        //}
+
+            IteratorIF<Node> prefixIT = rootTree.iterator(GTreeIF.IteratorModes.PREORDER);
+            List <StockPair> sequence = new List<>();
+            String productName = prefix;
+            while (prefixIT.hasNext()){
+
+                Stack<StockPair> pairStack = new Stack<>();
+
+                Node node = prefixIT.getNext();
+
+                if(node instanceof NodeInfo nodeInfo){
+                    int unidades = nodeInfo.getUnidades();
+                    StockPair stockPair = new StockPair(productName, unidades);
+                    sequence.insert(sequence.size()+1, stockPair);
+                }
+                else if(node instanceof NodeInner nodeInner){
+                    productName = productName + nodeInner.getLetter();
+                }
+            }
+    return null;
+    }
+    public static List<StockPair> preorderIterative(GTree<Node> root) {
+
+        String preString = "";
+
+        List<StockPair> sequence = new List<>();
+        Queue<StockPair> queuePAIR = new Queue<>();
+
+        Stack<GTreeIF<Node>> stackPREORDER = new Stack<>();
+
+        List<Integer> next = new List<>();
+
+        if (root == null) {
+            return sequence;
+        }
+
+        stackPREORDER.push(root);
+        queuePAIR.enqueue(new StockPair(preString, 0));
+
+        while (!stackPREORDER.isEmpty()){
+
+            //Continue Preorder
+            GTreeIF<Node> node = stackPREORDER.getTop();
+
+            Node nodeRoot = node.getRoot();
+            if (nodeRoot instanceof NodeInner nodeInner){
+                preString = preString + nodeInner.getLetter();
+            }
+            else if(nodeRoot instanceof NodeInfo nodeInfo){
+                StockPair sp = queuePAIR.getFirst();
+                String producto = sp.getProducto() + preString;
+
+                sequence.insert(sequence.size()+1, new StockPair(producto, nodeInfo.getUnidades()));
+
+                int unidades = nodeInfo.getUnidades();
+                StockPair stockPair = new StockPair(preString, unidades);
+                queuePAIR.enqueue(stockPair);
+
+            }
+
+            //Add children to stack PREORDER
+            IteratorIF<GTreeIF<Node>> childrenIT = node.getChildren().iterator();
+
+            if (childrenIT.hasNext()){
+                stackPREORDER.push(childrenIT.getNext());
+            }
+            //Only add to queue divergent branches (more than one child)
+            while (childrenIT.hasNext()){
+                stackPREORDER.push(childrenIT.getNext());
+                StockPair stockPair = new StockPair(preString, 0);
+                queuePAIR.enqueue(stockPair);
+            }
+        }
         return null;
     }
-
-
 
 
 }
