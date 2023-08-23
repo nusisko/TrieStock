@@ -31,7 +31,7 @@ public class StockTree implements StockIF {
                 NodeInner node = new NodeInner(c);
                 GTreeIF<Node> child = new GTree<>();
                 child.setRoot(node);
-                rootTree.addChild(rootTree.getNumChildren() + 1, child);
+                rootTree.addChild( 1, child);
                 // Target tree pasa a ser el nuevo árbol
                 rootTree = child;
             }else{
@@ -54,7 +54,7 @@ public class StockTree implements StockIF {
                     NodeInner node = new NodeInner(c);
                     GTreeIF<Node> child = new GTree<>();
                     child.setRoot(node);
-                    rootTree.addChild(rootTree.getNumChildren() + 1, child);
+                    rootTree.addChild(1, child);
                     rootTree = child;
                 }
             }
@@ -65,7 +65,7 @@ public class StockTree implements StockIF {
             NodeInfo node = new NodeInfo(u);
             GTreeIF<Node> TreeInfo = new GTree<>();
             TreeInfo.setRoot(node);
-            rootTree.addChild(rootTree.getNumChildren() + 1, TreeInfo);
+            rootTree.addChild(1, TreeInfo);
         } else {
             //Buscamos el Nodo INFO
             IteratorIF<GTreeIF<Node>> it = rootTree.getChildren().iterator();
@@ -159,7 +159,8 @@ public class StockTree implements StockIF {
 
         StringBuilder preString = new StringBuilder();
         List<StockPair> sequence = new List<>();
-        Queue<StockPair> queuePAIR = new Queue<>();
+        //Queue<StockPair> queuePAIR = new Queue<>();
+        Stack<StockPair> stackPAIR = new Stack<>();
 
         Stack<GTreeIF<Node>> stackPREORDER = new Stack<>();
 
@@ -170,7 +171,9 @@ public class StockTree implements StockIF {
         }
 
         stackPREORDER.push(root);
-        queuePAIR.enqueue(new StockPair(prefix, 0));
+        //queuePAIR.enqueue(new StockPair(prefix, 0));
+        stackPAIR.push(new StockPair(prefix, 0));
+
 
         while (!stackPREORDER.isEmpty()){
 
@@ -183,8 +186,14 @@ public class StockTree implements StockIF {
                 preString.append(nodeInner.getLetter());
             }
             else if(nodeRoot instanceof NodeInfo nodeInfo){
-                StockPair sp = queuePAIR.getFirst();
+                //StockPair sp = queuePAIR.getFirst();
+                //queuePAIR.dequeue();
+                StockPair sp = stackPAIR.getTop();
+                stackPAIR.pop();
+
                 String producto = sp.getProducto() + preString;
+
+
 
                 sequence.insert(sequence.size()+1, new StockPair(producto, nodeInfo.getUnidades()));
                 preString = new StringBuilder();
@@ -195,12 +204,15 @@ public class StockTree implements StockIF {
 
             if (childrenIT.hasNext()){
                 stackPREORDER.push(childrenIT.getNext());
+
             }
             //Only add to queue divergent branches (more than one child)
             while (childrenIT.hasNext()){
                 stackPREORDER.push(childrenIT.getNext());
                 StockPair stockPair = new StockPair(prefix + preString, 0);
-                queuePAIR.enqueue(stockPair);
+                //queuePAIR.enqueue(stockPair);
+                stackPAIR.push(stockPair);
+
             }
         }
         return sequence;
