@@ -14,6 +14,65 @@ public class StockTree implements StockIF {
         this.stock = new GTree<Node>();
     }
 
+    public static List<StockPair> preorderIterative(GTreeIF<Node> root, String prefix) {
+
+        StringBuilder preString = new StringBuilder();
+        List<StockPair> sequence = new List<>();
+        Stack<String> charBreadPath = new Stack<>();
+
+        Stack<GTreeIF<Node>> stackPREORDER = new Stack<>();
+
+        if (root == null) {
+            return sequence;
+        }
+
+        stackPREORDER.push(root);
+
+        boolean firstNodeValue = true;
+        boolean firstSotckPair = true;
+
+        while (!stackPREORDER.isEmpty()) {
+
+            //Continue Preorder
+            GTreeIF<Node> node = stackPREORDER.getTop();
+            stackPREORDER.pop();
+            Node nodeRoot = node.getRoot();
+
+            //Create StockPair for first word
+
+            if (nodeRoot instanceof NodeInner nodeInner) {
+                //System.out.println(nodeInner.getLetter());
+                preString.append(nodeInner.getLetter());
+            } else if (nodeRoot instanceof NodeInfo nodeInfo) {
+
+                if (firstSotckPair) {
+                    charBreadPath.push(prefix);
+                    firstSotckPair = false;
+                }
+
+                String producto = charBreadPath.getTop();
+                charBreadPath.pop();
+
+                //System.out.println("Inserted " + (producto + preString));
+
+                sequence.insert(1, new StockPair((producto + preString), nodeInfo.getUnidades()));
+                preString.setLength(0);
+            }
+
+            //Add children to stack PREORDER
+            IteratorIF<GTreeIF<Node>> childrenIT = node.getChildren().iterator();
+            if (childrenIT.hasNext()) {
+                stackPREORDER.push(childrenIT.getNext());
+            }
+            while (childrenIT.hasNext()) {
+
+                stackPREORDER.push(childrenIT.getNext());
+                charBreadPath.push((prefix+preString));
+            }
+        }
+        return sequence;
+    }
+
     @Override
     public void updateStock(String p, int u) {
         int n = p.length();
@@ -31,10 +90,10 @@ public class StockTree implements StockIF {
                 NodeInner node = new NodeInner(c);
                 GTreeIF<Node> child = new GTree<>();
                 child.setRoot(node);
-                rootTree.addChild( 1, child);
+                rootTree.addChild(1, child);
                 // Target tree pasa a ser el nuevo árbol
                 rootTree = child;
-            }else{
+            } else {
                 //Si tiene hijos, itera sobre ellos
                 IteratorIF<GTreeIF<Node>> it = rootTree.getChildren().iterator();
                 while (it.hasNext() && !found) {
@@ -55,6 +114,7 @@ public class StockTree implements StockIF {
                     GTreeIF<Node> child = new GTree<>();
                     child.setRoot(node);
                     rootTree.addChild(1, child);
+
                     rootTree = child;
                 }
             }
@@ -81,7 +141,6 @@ public class StockTree implements StockIF {
             }
         }
     }
-
 
     @Override
     public int retrieveStock(String p) {
@@ -155,68 +214,4 @@ public class StockTree implements StockIF {
         }
 
     }
-    public static List<StockPair> preorderIterative(GTreeIF<Node> root, String prefix) {
-
-        StringBuilder preString = new StringBuilder();
-        List<StockPair> sequence = new List<>();
-        //Queue<StockPair> queuePAIR = new Queue<>();
-        Stack<StockPair> stackPAIR = new Stack<>();
-
-        Stack<GTreeIF<Node>> stackPREORDER = new Stack<>();
-
-        List<Integer> next = new List<>();
-
-        if (root == null) {
-            return sequence;
-        }
-
-        stackPREORDER.push(root);
-        //queuePAIR.enqueue(new StockPair(prefix, 0));
-        stackPAIR.push(new StockPair(prefix, 0));
-
-
-        while (!stackPREORDER.isEmpty()){
-
-            //Continue Preorder
-            GTreeIF<Node> node = stackPREORDER.getTop();
-            stackPREORDER.pop();
-
-            Node nodeRoot = node.getRoot();
-            if (nodeRoot instanceof NodeInner nodeInner){
-                preString.append(nodeInner.getLetter());
-            }
-            else if(nodeRoot instanceof NodeInfo nodeInfo){
-                //StockPair sp = queuePAIR.getFirst();
-                //queuePAIR.dequeue();
-                StockPair sp = stackPAIR.getTop();
-                stackPAIR.pop();
-
-                String producto = sp.getProducto() + preString;
-
-
-
-                sequence.insert(sequence.size()+1, new StockPair(producto, nodeInfo.getUnidades()));
-                preString = new StringBuilder();
-            }
-
-            //Add children to stack PREORDER
-            IteratorIF<GTreeIF<Node>> childrenIT = node.getChildren().iterator();
-
-            if (childrenIT.hasNext()){
-                stackPREORDER.push(childrenIT.getNext());
-
-            }
-            //Only add to queue divergent branches (more than one child)
-            while (childrenIT.hasNext()){
-                stackPREORDER.push(childrenIT.getNext());
-                StockPair stockPair = new StockPair(prefix + preString, 0);
-                //queuePAIR.enqueue(stockPair);
-                stackPAIR.push(stockPair);
-
-            }
-        }
-        return sequence;
-    }
-
-
 }
