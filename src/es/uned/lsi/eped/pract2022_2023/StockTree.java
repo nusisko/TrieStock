@@ -1,9 +1,6 @@
 package es.uned.lsi.eped.pract2022_2023;
 
-//import ...
-
 import es.uned.lsi.eped.DataStructures.*;
-
 
 public class StockTree implements StockIF {
 
@@ -14,18 +11,16 @@ public class StockTree implements StockIF {
         this.stock = new GTree<Node>();
     }
 
-    public static List<StockPair> preorderIterative(ListIF<GTreeIF<Node>> rootChildren, String prefix) {
+    public static ListIF<StockPair> preorderIterative(ListIF<GTreeIF<Node>> rootChildren, String prefix) {
 
         IteratorIF<GTreeIF<Node>> rootChildrenIT = rootChildren.iterator();
-        List<StockPair> sequence = new List<>();
+        ListIF<StockPair> sequence = new List<>();
 
         while (rootChildrenIT.hasNext()) {
-
             GTreeIF<Node> root = rootChildrenIT.getNext();
 
             StringBuilder preString = new StringBuilder();
             Stack<String> charBreadPath = new Stack<>();
-
             Stack<GTreeIF<Node>> stackPREORDER = new Stack<>();
 
             if (root == null) {
@@ -33,21 +28,16 @@ public class StockTree implements StockIF {
             }
 
             stackPREORDER.push(root);
-
-            boolean firstNodeValue = true;
             boolean firstSotckPair = true;
 
             while (!stackPREORDER.isEmpty()) {
-
                 //Continue Preorder
                 GTreeIF<Node> node = stackPREORDER.getTop();
                 stackPREORDER.pop();
                 Node nodeRoot = node.getRoot();
 
                 //Create StockPair for first word
-
                 if (nodeRoot instanceof NodeInner nodeInner) {
-                    //System.out.println(nodeInner.getLetter());
                     preString.append(nodeInner.getLetter());
                 } else if (nodeRoot instanceof NodeInfo nodeInfo) {
 
@@ -59,12 +49,9 @@ public class StockTree implements StockIF {
                     String producto = charBreadPath.getTop();
                     charBreadPath.pop();
 
-                    //System.out.println("Inserted " + (producto + preString));
-
                     sequence.insert(1, new StockPair((producto + preString), nodeInfo.getUnidades()));
                     preString.setLength(0);
                 }
-
                 //Add children to stack PREORDER
                 IteratorIF<GTreeIF<Node>> childrenIT = node.getChildren().iterator();
                 if (childrenIT.hasNext()) {
@@ -77,17 +64,17 @@ public class StockTree implements StockIF {
                 }
             }
         }
-            return sequence;
+
+        return sequence;
     }
 
     @Override
     public void updateStock(String p, int u) {
-        int n = p.length();
         //Determina el target tree como el stock
         GTreeIF<Node> rootTree = stock;
 
         // Itera sobre el string p
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i < p.length(); i++) {
 
             char c = p.charAt(i);
             boolean found = false;
@@ -151,18 +138,15 @@ public class StockTree implements StockIF {
 
     @Override
     public int retrieveStock(String p) {
-        int n = p.length();
         //Determina el target tree como el stock
         GTreeIF<Node> rootTree = stock;
-
-        // Itera sobre el string p
-        for (int i = 0; i < n; i++) {
-
+        //Itera sobre el string p
+        for (int i = 0; i < p.length(); i++) { //--------------------------------------------------->> O(p:palabra)
             char c = p.charAt(i);
             boolean found = false;
 
             IteratorIF<GTreeIF<Node>> it = rootTree.getChildren().iterator();
-            while (it.hasNext() && !found) {
+            while (it.hasNext() && !found) { //--------------------------------------------------->> O(a:alfabeto
                 GTreeIF<Node> child = it.getNext();
                 //Si el hijo es un nodo interno y su letra coincide con el char c
                 //  found = true
@@ -189,12 +173,11 @@ public class StockTree implements StockIF {
 
     @Override
     public SequenceIF<StockPair> listStock(String prefix) {
-        int n = prefix.length();
         //Determina el target tree como el stock
         GTreeIF<Node> rootTree = stock;
 
         // Itera sobre el string p
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i < prefix.length(); i++) {
 
             char c = prefix.charAt(i);
             boolean found = false;
